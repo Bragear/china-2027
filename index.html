@@ -470,11 +470,15 @@ window.ROUTE = {
         '<button type="button" class="step next"' + (next ? '' : ' disabled') + '>' + (next ? next.name : 'End') + ' →</button>' +
       '</nav>' +
       '<button type="button" class="back">Back to the route <span class="kbd">Esc</span></button>';
-    card.querySelector('.prev').addEventListener('click', function () { if (prev) focus(i - 1); });
-    card.querySelector('.next').addEventListener('click', function () { if (next) focus(i + 1); });
+    card.querySelector('.prev').addEventListener('click', function () { if (prev) focus(i - 1, '.prev'); });
+    card.querySelector('.next').addEventListener('click', function () { if (next) focus(i + 1, '.next'); });
     card.querySelector('.back').addEventListener('click', unfocus);
   }
-  function focus(i) {
+  // the card re-renders on every step, which detaches the clicked button before the
+  // event reaches the deck; stop it here so it can never read as "advance the slide"
+  side.addEventListener('click', function (e) { e.stopPropagation(); });
+  side.addEventListener('keydown', function (e) { if (e.key === ' ' || e.key === 'Enter') e.stopPropagation(); });
+  function focus(i, refocus) {
     focused = i;
     svg.classList.add('focused');
     R.stops.forEach(function (st, k) {
@@ -489,6 +493,7 @@ window.ROUTE = {
     flyTo(frameFor(i));
     renderCard(i);
     list.hidden = true; card.hidden = false;
+    if (refocus) { var b = card.querySelector(refocus); if (b && !b.disabled) b.focus(); }
   }
   function unfocus() {
     if (focused < 0) return;
