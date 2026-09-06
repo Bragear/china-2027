@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>China 2027 — Three itineraries for four friends</title>
+<style>
+:root {
+  --bg: #F6F1E7;
+  --ink: #1F1A15;
+  --muted: #6E6257;
+  --rule: #D9CFBF;
+  --accent: #C8362B;
+  --accent-soft: #F3D9D4;
+  --card: #FFFDF8;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: clamp(16px, 1.6vw, 22px);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+.deck { position: relative; height: 100%; }
+.slide {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6vh 8vw;
+  max-width: 1400px; margin: 0 auto;
+}
+.slide.active { display: flex; animation: fade 220ms ease-out; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.kicker {
+  font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--accent); font-weight: 600; margin: 0 0 0.6em;
+}
+h1 { font-size: 2.8em; line-height: 1.05; margin: 0 0 0.4em; font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.9em; line-height: 1.1; margin: 0 0 0.7em; font-weight: 700; letter-spacing: -0.015em; }
+h3 { font-size: 1em; margin: 0 0 0.3em; font-weight: 700; }
+p { margin: 0 0 0.6em; }
+.lead { font-size: 1.15em; color: var(--muted); max-width: 32em; }
+ul { margin: 0; padding-left: 1.1em; }
+li { margin-bottom: 0.45em; }
+li::marker { color: var(--accent); }
+strong { font-weight: 700; }
+.muted { color: var(--muted); }
+.small { font-size: 0.8em; }
+
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2em; }
+.card {
+  background: var(--card); border: 1px solid var(--rule); border-radius: 12px;
+  padding: 1em 1.1em;
+}
+.card.pick { border-color: var(--accent); background: var(--accent-soft); }
+.tag {
+  display: inline-block; font-size: 0.65em; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 0.5em;
+}
+.route { font-size: 0.85em; color: var(--muted); margin-bottom: 0.6em; }
+.big { font-size: 1.6em; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.85em; }
+th, td { text-align: left; padding: 0.45em 0.6em; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 700; color: var(--muted); font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.06em; }
+td.v { font-weight: 700; }
+td.v.fly { color: var(--accent); }
+
+ol.steps { margin: 0; padding-left: 0; list-style: none; counter-reset: s; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 2.2em 1fr; gap: 0.6em; margin-bottom: 0.7em; }
+ol.steps li::before {
+  content: counter(s); width: 1.8em; height: 1.8em; border-radius: 50%;
+  background: var(--ink); color: var(--bg); font-weight: 700; font-size: 0.8em;
+  display: grid; place-items: center;
+}
+
+.ui {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.8em 2.4vw; font-size: 0.7em; color: var(--muted);
+}
+.ui button {
+  font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--rule);
+  border-radius: 999px; padding: 0.4em 1em; cursor: pointer;
+}
+.ui button:hover { border-color: var(--ink); }
+.progress { position: fixed; top: 0; left: 0; height: 4px; background: var(--accent); width: 0; transition: width 200ms ease-out; }
+
+.map { display: grid; grid-template-columns: 3fr 2fr; gap: 1.5em; align-items: center; }
+.itin { list-style: none; padding: 0; margin: 0; font-size: 0.7em; line-height: 1.3; }
+.itin .stop { display: flex; align-items: center; gap: 0.5em; font-weight: 700; }
+.itin .num { width: 1.5em; height: 1.5em; border-radius: 50%; border: 2px solid var(--ink); font-size: 0.7em; display: grid; place-items: center; flex: none; }
+.itin .city { flex: 1; }
+.itin .n { color: var(--muted); font-weight: 400; white-space: nowrap; }
+.itin .leg { color: var(--muted); font-size: 0.82em; padding: 0 0 0 2.7em; line-height: 1.2; }
+.itin .leg .ic { display: inline-block; width: 1.5em; }
+.itin .leg.fly { color: var(--accent); }
+.itin .total { margin-top: 0.4em; padding-top: 0.3em; border-top: 1px solid var(--rule); text-align: right; color: var(--muted); }
+@media (max-width: 900px) { .map { grid-template-columns: 1fr; } }
+
+.itin.acc { max-height: 64vh; overflow-y: auto; padding-right: 0.4em; }
+.itin .hint { margin: 0 0 0.4em; color: var(--muted); font-size: 0.85em; }
+.itin details.stop { display: block; border-bottom: 1px solid var(--rule); }
+.itin summary { list-style: none; display: flex; align-items: center; gap: 0.5em; font-weight: 700; padding: 0.35em 0; cursor: pointer; }
+.itin summary::-webkit-details-marker { display: none; }
+.itin summary:hover .city { color: var(--accent); }
+.itin .chev { color: var(--muted); font-weight: 400; margin-left: 0.3em; font-size: 1.3em; line-height: 1; display: inline-block; transition: transform 150ms ease-out; }
+.itin details[open] .chev { transform: rotate(90deg); }
+.itin .more { padding: 0 0 0.5em 2.2em; }
+.itin .acts { margin: 0 0 0.35em; padding-left: 1em; font-weight: 400; }
+.itin .acts li { margin: 0 0 0.1em; }
+.itin .more .leg { padding: 0.1em 0 0.3em; margin: 0; }
+.itin .caveat { margin: 0 0 0.4em; color: var(--muted); font-style: italic; }
+.itin p.total { margin: 0.4em 0 0; padding-top: 0.3em; text-align: right; color: var(--muted); }
+
+.pin { cursor: pointer; }
+.pin:hover circle { stroke: var(--accent); }
+.pin:focus, .pin:focus-visible { outline: none; }
+.pin:focus-visible circle { stroke: var(--accent); stroke-width: 4; }
+.pin.open circle { fill: var(--accent); stroke: var(--accent); }
+.pin.open > text:nth-of-type(1) { fill: #fff; }
+.pin.open > text:nth-of-type(2) { fill: var(--accent); }
+.itin details[open] > summary .city { color: var(--accent); }
+
+
+@media (max-width: 700px) {
+  body { font-size: 15px; }
+  .slide { padding: 5vh 6vw 12vh; justify-content: flex-start; overflow-y: auto; }
+  h1 { font-size: 2.2em; }
+}
+@media print {
+  body { overflow: visible; background: #fff; }
+  .slide { display: flex !important; position: static; height: 100vh; page-break-after: always; }
+  .ui, .progress { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+<section class="slide">
+  <p class="kicker">Travel plan · 3–4 weeks</p>
+  <h1>China 2027</h1>
+  <p class="lead">A 23-night route for four friends from Oslo, plus the alternatives we weighed. Independent travel, mid-range budget, no Mandarin.</p>
+</section>
+
+<section class="slide">
+  <h2>The short version</h2>
+  <ul>
+    <li><strong>Go, but plan around the visa.</strong> Visa-free entry for Norwegians is only confirmed through 31 Dec 2026. Assume a tourist visa for 2027 (about NOK 1,200 per person).</li>
+    <li><strong>The plan:</strong> Beijing, Xi'an, Chongqing, Wulong, Zhangjiajie, Lijiang, Hong Kong, Wangxian Valley, Wuhan, Shanghai. 23 nights, in June or September.</li>
+    <li><strong>Budget:</strong> roughly US$2,100–3,100 per person on the ground, US$400–650 for the two internal flights, plus US$700–1,300 for flights from Oslo.</li>
+    <li><strong>Prep three things before flying:</strong> Alipay + WeChat Pay, a roaming eSIM, and a train booking account.</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <h2>Five things that shape the trip</h2>
+  <ol class="steps">
+    <li><span><strong>The visa is the biggest planning risk.</strong> Any extension would be announced Nov–Dec 2026.</span></li>
+    <li><span><strong>High-speed rail is the backbone.</strong> But Guilin, Zhangjiajie and Yunnan are better reached by plane.</span></li>
+    <li><span><strong>Payments and internet are solved</strong> if set up correctly before arrival.</span></li>
+    <li><span><strong>Summer heat is the enemy.</strong> July–August is brutal in the east and south. June and September are far better.</span></li>
+    <li><span><strong>Four people means friction.</strong> Ride-hail cars seat four with no luggage room, and hotel rooms are built for two.</span></li>
+  </ol>
+</section>
+
+<section class="slide">
+  <p class="kicker">Our route · 23 nights</p>
+  <h2>Beijing to Shanghai the long way</h2>
+  <p class="route">Beijing (3) → Xi'an (2) → Chongqing (3) → Wulong (1) → Zhangjiajie (3, Furong as a day trip) → Lijiang (2) → Hong Kong (3) → Wangxian Valley (1) → Wuhan (2) → Shanghai (3)</p>
+  <div class="cols">
+    <div class="card"><h3>Why this one</h3><p class="small">The big icons (Great Wall, Terracotta Army, the Bund), Chongqing and the karst early, a cool highland break in Lijiang, Hong Kong as the pivot, then the Wangxian cliff town and Wuhan on the way to Shanghai. Fly home from Pudong.</p></div>
+    <div class="card"><h3>Trade-offs</h3><p class="small">Two long flights (Zhangjiajie to Lijiang via Kunming, Lijiang to Hong Kong) and a full travel day from Hong Kong to Wangxian Valley. Ten stops in 23 nights means moving every second or third day. Night counts are our suggestion, not from the research.</p></div>
+    <div class="card pick"><h3>Visa note</h3><p class="small">Hong Kong sits outside mainland immigration, so this is two mainland entries. The second one is short, about six nights, which makes the 30-day count easy. Confirm with the embassy before relying on it.</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="kicker">Our route · the map</p>
+  <h2>Beijing to Shanghai the long way, 23 nights</h2>
+  <div class="map">
+    <svg viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Route map" style="width:100%;height:auto;max-height:62vh;display:block">
+<line x1="591.6" y1="94.0" x2="374.9" y2="238.0" stroke="#1F1A15" stroke-width="3" stroke-linecap="round"/>
+<line x1="374.9" y1="238.0" x2="307.0" y2="359.9" stroke="#1F1A15" stroke-width="3" stroke-linecap="round"/>
+<line x1="307.0" y1="359.9" x2="342.0" y2="365.8" stroke="#1F1A15" stroke-width="3" stroke-linecap="round"/>
+<line x1="342.0" y1="365.8" x2="421.1" y2="371.7" stroke="#1F1A15" stroke-width="3" stroke-linecap="round"/>
+<path d="M421.1 371.7 Q277.3 424.1 124.4 429.1" fill="none" stroke="#C8362B" stroke-width="3" stroke-dasharray="8 8" stroke-linecap="round"/>
+<path d="M124.4 429.1 Q302.4 568.1 527.1 546.1" fill="none" stroke="#C8362B" stroke-width="3" stroke-dasharray="8 8" stroke-linecap="round"/>
+<line x1="527.1" y1="546.1" x2="639.2" y2="385.9" stroke="#1F1A15" stroke-width="3" stroke-linecap="round"/>
+<line x1="639.2" y1="385.9" x2="531.2" y2="333.4" stroke="#1F1A15" stroke-width="3" stroke-linecap="round"/>
+<line x1="531.2" y1="333.4" x2="738.9" y2="317.7" stroke="#1F1A15" stroke-width="3" stroke-linecap="round"/>
+<g class="pin" data-stop="0" role="button" tabindex="0" aria-label="Beijing">
+<circle cx="591.6" cy="94.0" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="591.6" y="98.5" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">1</text>
+<text x="605.6" y="86.0" text-anchor="start" font-size="20" font-weight="700" fill="#1F1A15">Beijing</text>
+<text x="605.6" y="106.0" text-anchor="start" font-size="15" fill="#6E6257">3 nights</text>
+</g>
+<g class="pin" data-stop="1" role="button" tabindex="0" aria-label="Xi'an">
+<circle cx="374.9" cy="238.0" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="374.9" y="242.5" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">2</text>
+<text x="360.9" y="228.0" text-anchor="end" font-size="20" font-weight="700" fill="#1F1A15">Xi'an</text>
+<text x="360.9" y="248.0" text-anchor="end" font-size="15" fill="#6E6257">2 nights</text>
+</g>
+<g class="pin" data-stop="2" role="button" tabindex="0" aria-label="Chongqing">
+<circle cx="307.0" cy="359.9" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="307.0" y="364.4" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">3</text>
+<text x="293.0" y="353.9" text-anchor="end" font-size="20" font-weight="700" fill="#1F1A15">Chongqing</text>
+<text x="293.0" y="373.9" text-anchor="end" font-size="15" fill="#6E6257">3 nights</text>
+</g>
+<g class="pin" data-stop="3" role="button" tabindex="0" aria-label="Wulong">
+<circle cx="342.0" cy="365.8" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="342.0" y="370.3" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">4</text>
+<text x="352.0" y="343.8" text-anchor="start" font-size="20" font-weight="700" fill="#1F1A15">Wulong</text>
+<text x="352.0" y="323.8" text-anchor="start" font-size="15" fill="#6E6257">1 night</text>
+</g>
+<g class="pin" data-stop="4" role="button" tabindex="0" aria-label="Zhangjiajie">
+<circle cx="421.1" cy="371.7" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="421.1" y="376.2" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">5</text>
+<text x="435.1" y="397.7" text-anchor="start" font-size="20" font-weight="700" fill="#1F1A15">Zhangjiajie</text>
+<text x="435.1" y="417.7" text-anchor="start" font-size="15" fill="#6E6257">3 nights</text>
+</g>
+<g class="pin" data-stop="5" role="button" tabindex="0" aria-label="Lijiang">
+<circle cx="124.4" cy="429.1" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="124.4" y="433.6" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">6</text>
+<text x="110.4" y="435.1" text-anchor="end" font-size="20" font-weight="700" fill="#1F1A15">Lijiang</text>
+<text x="110.4" y="455.1" text-anchor="end" font-size="15" fill="#6E6257">2 nights</text>
+</g>
+<g class="pin" data-stop="6" role="button" tabindex="0" aria-label="Hong Kong">
+<circle cx="527.1" cy="546.1" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="527.1" y="550.6" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">7</text>
+<text x="541.1" y="552.1" text-anchor="start" font-size="20" font-weight="700" fill="#1F1A15">Hong Kong</text>
+<text x="541.1" y="572.1" text-anchor="start" font-size="15" fill="#6E6257">3 nights</text>
+</g>
+<g class="pin" data-stop="7" role="button" tabindex="0" aria-label="Wangxian Valley">
+<circle cx="639.2" cy="385.9" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="639.2" y="390.4" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">8</text>
+<text x="653.2" y="391.9" text-anchor="start" font-size="20" font-weight="700" fill="#1F1A15">Wangxian Valley</text>
+<text x="653.2" y="411.9" text-anchor="start" font-size="15" fill="#6E6257">1 night</text>
+</g>
+<g class="pin" data-stop="8" role="button" tabindex="0" aria-label="Wuhan">
+<circle cx="531.2" cy="333.4" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="531.2" y="337.9" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">9</text>
+<text x="531.2" y="311.4" text-anchor="middle" font-size="20" font-weight="700" fill="#1F1A15">Wuhan</text>
+<text x="531.2" y="291.4" text-anchor="middle" font-size="15" fill="#6E6257">2 nights</text>
+</g>
+<g class="pin" data-stop="9" role="button" tabindex="0" aria-label="Shanghai">
+<circle cx="738.9" cy="317.7" r="11" fill="#FFFDF8" stroke="#1F1A15" stroke-width="3"/>
+<text x="738.9" y="322.2" text-anchor="middle" font-size="12" font-weight="700" fill="#1F1A15">10</text>
+<text x="752.9" y="309.7" text-anchor="start" font-size="20" font-weight="700" fill="#1F1A15">Shanghai</text>
+<text x="752.9" y="329.7" text-anchor="start" font-size="15" fill="#6E6257">3 nights</text>
+</g>
+<g font-size="15" fill="#6E6257">
+<line x1="60" y1="596" x2="110" y2="596" stroke="#1F1A15" stroke-width="3" stroke-linecap="round"/><text x="120" y="601">High-speed rail</text>
+<line x1="270" y1="596" x2="320" y2="596" stroke="#C8362B" stroke-width="3" stroke-dasharray="8 8" stroke-linecap="round"/><text x="330" y="601">Flight</text>
+</g></svg>
+    <div class="itin acc"><p class="hint">Click a stop for how to get there and what to do</p><details class="stop"><summary><span class="num">1</span><span class="city">Beijing</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly in from Oslo, ~16 h direct or one stop</p><ul class="acts"><li>Forbidden City and Tiananmen Square</li><li>Mutianyu Great Wall day with a private car</li><li>Temple of Heaven and the Summer Palace</li><li>Hutong food walk and Peking duck</li></ul></div></details><details class="stop"><summary><span class="num">2</span><span class="city">Xi'an</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · 4.5–6 h from Beijing</p><ul class="acts"><li>Terracotta Army</li><li>Cycle the city wall</li><li>Muslim Quarter street food: roujiamo, biang-biang noodles</li><li>Big Wild Goose Pagoda fountains at night</li></ul></div></details><details class="stop"><summary><span class="num">3</span><span class="city">Chongqing</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~5 h from Xi'an</p><ul class="acts"><li>Hongya Cave lit up at night</li><li>Chongqing hotpot, the fiery original</li><li>Yangtze cable car and Liziba monorail through a building</li><li>Ciqikou old town</li><li>Dazu Rock Carvings day trip</li></ul></div></details><details class="stop"><summary><span class="num">4</span><span class="city">Wulong</span><span class="n">1 night</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~2 h from Chongqing</p><ul class="acts"><li>Three Natural Bridges</li><li>Longshuixia Fissure Gorge</li><li>Furong Cave</li></ul></div></details><details class="stop"><summary><span class="num">5</span><span class="city">Zhangjiajie</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~2 h from Wulong South</p><ul class="acts"><li>National Forest Park, the Avatar pillars</li><li>Bailong elevator and Tianzi Mountain</li><li>Tianmen Mountain and the glass walkway</li><li>Furong ancient town day trip: a village on a waterfall</li></ul></div></details><details class="stop"><summary><span class="num">6</span><span class="city">Lijiang</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly · 4–8 h via Kunming from Zhangjiajie</p><ul class="acts"><li>Dayan old town, early morning before the crowds</li><li>Jade Dragon Snow Mountain and Blue Moon Valley</li><li>Tiger Leaping Gorge hike, two days with a guesthouse night</li><li>Shuhe and Baisha villages by bike</li><li>Black Dragon Pool</li></ul><p class="caveat">Two nights gives one full day: the old town plus either the snow mountain or a taste of the gorge. The two-day hike does not fit.</p></div></details><details class="stop"><summary><span class="num">7</span><span class="city">Hong Kong</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly · ~2.5 h, some via Kunming from Lijiang</p><ul class="acts"><li>Victoria Peak at dusk</li><li>Star Ferry across the harbour</li><li>Dim sum lunch, dai pai dong dinner</li><li>Dragon's Back hike or Lantau Big Buddha</li><li>Mong Kok night markets</li></ul></div></details><details class="stop"><summary><span class="num">8</span><span class="city">Wangxian Valley</span><span class="n">1 night</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~6 h + 1 h car from Hong Kong</p><ul class="acts"><li>Cliffside town lit up at night</li><li>Canyon walkways and waterfalls</li><li>Morning mist before the day visitors arrive</li></ul></div></details><details class="stop"><summary><span class="num">9</span><span class="city">Wuhan</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · 1 h car + ~3 h from Wangxian Valley</p><ul class="acts"><li>Yellow Crane Tower</li><li>Hubei Provincial Museum and the Marquis Yi bells</li><li>East Lake greenway by bike</li><li>Hot dry noodles for breakfast</li></ul></div></details><details class="stop"><summary><span class="num">10</span><span class="city">Shanghai</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~4 h from Wuhan</p><ul class="acts"><li>The Bund and the Pudong skyline</li><li>Yu Garden and the old town</li><li>French Concession cafés and side streets</li><li>Shanghai Tower observation deck</li><li>Museums by day, nightlife by night</li></ul></div></details><p class="total">23 nights</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="kicker">Alternatives we weighed</p>
+  <h2>Four other ways to do it</h2>
+  <div class="cols">
+    <div class="card"><span class="tag">Classic + Karst · 24 nights</span><p class="route">Beijing → Xi'an → Chengdu → Guilin/Yangshuo → Zhangjiajie → Shanghai + Hangzhou</p><p class="small">The research's original pick. Adds pandas, Sichuan food and the Li River. Drops Hong Kong and Yunnan.</p></div>
+    <div class="card"><span class="tag">Grand tour via Shangri-La · 26 nights</span><p class="route">Beijing → Shanghai → Wuhan → Wangxian Valley → Hong Kong → Zhangjiajie → Furong → Wulong → Chongqing → Kunming → Lijiang → Shangri-La</p><p class="small">Our stops in reverse, plus Kunming, Furong and Shangri-La. Ends in the Tibetan highlands, so you fly home from Kunming.</p></div>
+    <div class="card"><span class="tag">Mountains, Rivers &amp; Yunnan · 23 nights</span><p class="route">Zhangjiajie → Fenghuang → Guilin/Yangshuo → Kunming → Dali → Lijiang → Shangri-La</p><p class="small">The anti-city itinerary. Sits at altitude, so it is the choice if dates land in July–August.</p></div>
+    <div class="card"><span class="tag">Food &amp; Culture · 22 nights</span><p class="route">Xi'an → Chengdu → Chongqing → Guangzhou → Shanghai + Hangzhou</p><p class="small">Four of China's five best food cities. Markets and cooking classes instead of monuments. The cheapest option.</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>Getting between stops</h2>
+  <p class="muted small">China's high-speed rail network passed 50,000 km in December 2025. Default to trains under 5–6 hours. Tickets open 15 days before departure.</p>
+  <table>
+    <tr><th>Leg</th><th>Rail</th><th>Fly</th><th>Verdict</th></tr>
+    <tr><td>Beijing → Xi'an</td><td>4.5–6 h</td><td>2 h</td><td class="v">Rail</td></tr>
+    <tr><td>Xi'an → Chongqing</td><td>~5 h</td><td>1.5 h</td><td class="v">Rail</td></tr>
+    <tr><td>Chongqing → Wulong → Zhangjiajie</td><td>~2 h + ~2 h</td><td>–</td><td class="v">Rail, same line</td></tr>
+    <tr><td>Zhangjiajie → Lijiang</td><td>~12 h</td><td>4–8 h via Kunming</td><td class="v fly">Fly</td></tr>
+    <tr><td>Lijiang → Hong Kong</td><td>–</td><td>2.5 h direct, 5x weekly</td><td class="v fly">Fly</td></tr>
+    <tr><td>Hong Kong → Wangxian Valley</td><td>~6 h to Shangrao + 1 h car</td><td>via Nanchang</td><td class="v">Rail</td></tr>
+    <tr><td>Wangxian Valley → Wuhan</td><td>1 h car + ~3 h</td><td>–</td><td class="v">Rail</td></tr>
+    <tr><td>Wuhan → Shanghai</td><td>~4 h</td><td>1.5 h</td><td class="v">Rail</td></tr>
+  </table>
+  <p class="muted small" style="margin-top:0.8em">Book trains on 12306 or Trip.com. Domestic flights 1–2 months ahead. Chinese carriers enforce a 5 kg carry-on limit.</p>
+</section>
+
+<section class="slide">
+  <h2>Visa for Norwegians</h2>
+  <div class="cols">
+    <div class="card"><h3>Now, to 31 Dec 2026</h3><p class="small">Visa-free for up to 30 days of tourism.</p></div>
+    <div class="card pick"><h3>2027</h3><p class="small">No extension announced. Only Russia has been extended. China has extended twice before, each time around 1 December.</p></div>
+    <div class="card"><h3>Decision rule</h3><p class="small">If nothing is published by 1 Dec 2026, apply for an L visa at the Oslo centre in Lysaker. About NOK 1,200 per person, 4 working days.</p></div>
+  </div>
+  <p class="small" style="margin-top:1em"><strong>The 30-day cap matters.</strong> The waiver is not extendable in-country. If the trip approaches 30 days, get the visa regardless. Even a one-day overstay causes trouble on departure.</p>
+</section>
+
+<section class="slide">
+  <h2>Practicalities</h2>
+  <div class="cols">
+    <div class="card"><h3>Payments</h3><p class="small">Alipay and WeChat Pay both take foreign Visa and Mastercard. Set up both. Purchases under ¥200 are fee-free, above that a 3% fee. Carry ¥500–1,000 cash.</p></div>
+    <div class="card"><h3>Internet</h3><p class="small">Google, WhatsApp, Instagram and YouTube are blocked. A roaming eSIM (Airalo, Holafly) bypasses this without a VPN. Install a VPN before arriving as backup.</p></div>
+    <div class="card"><h3>Hotels</h3><p class="small">Book on Trip.com. Three-star and up almost always take foreigners. Message the hotel after booking to confirm.</p></div>
+    <div class="card"><h3>English</h3><p class="small">Limited outside big hotels and airports. Baidu Translate, Youdao and Microsoft Translator work without a VPN. DiDi removes the taxi language barrier.</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>When to go</h2>
+  <div class="cols">
+    <div class="card"><h3>Avoid</h3><ul class="small"><li>Chinese New Year, 6 Feb 2027 and the week around it</li><li>Labour Day, around 1–5 May</li><li>National Day Golden Week, 1–7 Oct</li></ul></div>
+    <div class="card"><h3>July–August</h3><p class="small">Brutally hot and humid in Beijing, Shanghai, Xi'an, Chengdu and Chongqing, plus typhoon risk on the coast. Only highland Yunnan stays pleasant.</p></div>
+    <div class="card pick"><h3>Best windows</h3><p class="small">Our route: <strong>June or September</strong>. Lijiang is the only cool stop, so July–August would be hard. The Yunnan alternative is the true summer option.</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>Budget per person</h2>
+  <p class="muted small">Mid-range, sharing twin rooms, excluding flights from Oslo. About US$90–150 per day. Our route's figure is an estimate scaled from the research; Hong Kong is pricier than the mainland cities.</p>
+  <div class="cols">
+    <div class="card pick"><span class="tag">Our route · 23 nights</span><p class="big">$2,100–3,100</p><p class="small muted">+ $400–650 for two flights, incl. Lijiang to Hong Kong</p></div>
+    <div class="card"><span class="tag">Classic + Karst · 24</span><p class="big">$2,200–3,200</p><p class="small muted">+ $250–400 domestic flights</p></div>
+    <div class="card"><span class="tag">Yunnan · 23</span><p class="big">$2,000–2,900</p><p class="small muted">+ $300–450 domestic flights</p></div>
+    <div class="card"><span class="tag">Food &amp; Culture · 22</span><p class="big">$1,900–2,800</p><p class="small muted">+ $200–350 domestic flights</p></div>
+  </div>
+  <p class="small" style="margin-top:1em"><strong>Oslo to China return:</strong> US$700–1,300 economy. Usually one connection via Frankfurt, Istanbul, Amsterdam, Helsinki, Doha or Paris. Consider flying into Beijing and out of Shanghai.</p>
+</section>
+
+<section class="slide">
+  <h2>Travelling as four</h2>
+  <ul>
+    <li><strong>Rooms:</strong> Chinese hotels are built for two. Plan on two twin rooms. Hostels have four-bed private rooms.</li>
+    <li><strong>Ride-hailing:</strong> a standard DiDi seats four with no room for luggage. Expect two cars or a larger vehicle, especially for airport transfers.</li>
+    <li><strong>Trains and flights:</strong> book all four seats in one transaction to sit together.</li>
+    <li><strong>What scales well:</strong> hotpot dinners, tuk-tuk food tours, a private Great Wall car, bamboo rafting, cooking classes, bike rentals.</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <p class="kicker">The plan</p>
+  <h2>Our route, in June or September 2027</h2>
+  <ol class="steps">
+    <li><span><strong>Now to mid-2026:</strong> pick dates, price flights, book open-jaw into Beijing and out of Shanghai.</span></li>
+    <li><span><strong>December 2026:</strong> check the visa-free extension. If none, book visa appointments in Oslo. Book international flights.</span></li>
+    <li><span><strong>2–3 months before:</strong> book the two internal flights (Zhangjiajie to Lijiang via Kunming, Lijiang to Hong Kong) and all hotels on Trip.com. Two twin rooms each.</span></li>
+    <li><span><strong>1 month before:</strong> register on 12306, buy the eSIM, install a VPN, download Alipay, WeChat, DiDi, Trip.com and a translator.</span></li>
+    <li><span><strong>15 days before each leg:</strong> book high-speed rail the moment sales open, especially Beijing–Xi'an, Xi'an–Chongqing and Wuhan–Shanghai.</span></li>
+  </ol>
+</section>
+
+<section class="slide">
+  <h2>Our route, week by week</h2>
+  <div class="cols">
+    <div class="card"><span class="tag">Week 1</span><h3>Beijing 3 · Xi'an 2 · Chongqing 2</h3><p class="small">Fly Oslo to Beijing. Forbidden City, Mutianyu Great Wall, hutong food, Peking duck. Train to Xi'an: Terracotta Army, city wall by bike, Muslim Quarter. Train on to Chongqing: Hongya Cave, hotpot, the cable car.</p></div>
+    <div class="card"><span class="tag">Week 2</span><h3>Chongqing 1 · Wulong 1 · Zhangjiajie 3 · Lijiang 2</h3><p class="small">Ciqikou or Dazu, then train to Wulong for the Three Natural Bridges. Train to Zhangjiajie: the Avatar pillars, Tianmen Mountain, a Furong day trip. Fly via Kunming to Lijiang: old town and the snow mountain.</p></div>
+    <div class="card"><span class="tag">Week 3</span><h3>Hong Kong 3 · Wangxian Valley 1 · Wuhan 2 · Shanghai 1</h3><p class="small">Fly to Hong Kong: the Peak, Star Ferry, dim sum, a hike. Long rail day to Shangrao and the Wangxian cliff town at night. Train to Wuhan: Yellow Crane Tower, East Lake. Train to Shanghai.</p></div>
+    <div class="card"><span class="tag">Final days</span><h3>Shanghai 2</h3><p class="small">The Bund, Yu Garden, French Concession, Shanghai Tower. Fly home from Pudong. 23 nights in total.</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>If things change</h2>
+  <ul>
+    <li><strong>Dates must be July–August:</strong> switch to the Yunnan alternative for the cooler highlands, or accept heat everywhere except Lijiang.</li>
+    <li><strong>Hard three weeks:</strong> drop Wangxian Valley and Wuhan and fly Hong Kong to Shanghai direct. About 20 nights.</li>
+    <li><strong>Visa-free is extended:</strong> keep the trip under 30 days and skip the visa, but count days carefully.</li>
+  </ul>
+  <p class="muted small" style="margin-top:1.2em">Prices are 2026 observations. Holiday dates for 2027 are confirmed only when the State Council issues its notice, around Nov 2026. Re-check embassy notices before booking anything non-refundable.</p>
+</section>
+
+</div>
+
+<div class="ui">
+  <span>← → or space to navigate · click to advance</span>
+  <span><button id="prev">Prev</button> <span id="counter"></span> <button id="next">Next</button></span>
+</div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var i = 0;
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    document.getElementById('counter').textContent = (i + 1) + ' / ' + slides.length;
+    document.getElementById('progress').style.width = ((i + 1) / slides.length * 100) + '%';
+    history.replaceState(null, '', '#' + (i + 1));
+  }
+  document.getElementById('next').addEventListener('click', function (e) { e.stopPropagation(); show(i + 1); });
+  document.getElementById('prev').addEventListener('click', function (e) { e.stopPropagation(); show(i - 1); });
+  document.getElementById('deck').addEventListener('click', function (e) { if (e.target.closest('.itin') || e.target.closest('.pin')) return; show(i + 1); });
+  document.querySelectorAll('.map .pin').forEach(function (pin) {
+    function toggle() {
+      var d = pin.closest('.map').querySelectorAll('details.stop')[+pin.dataset.stop];
+      if (!d) return;
+      d.open = !d.open;
+      if (d.open) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    pin.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
+    pin.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); toggle(); } });
+  });
+  document.querySelectorAll('.map details.stop').forEach(function (d, k) {
+    d.addEventListener('toggle', function () {
+      var pin = d.closest('.map').querySelector('.pin[data-stop="' + k + '"]');
+      if (pin) pin.classList.toggle('open', d.open);
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest && (e.target.closest('.itin') || e.target.closest('.pin'))) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+  });
+  var start = parseInt(location.hash.slice(1), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
