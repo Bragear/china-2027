@@ -123,14 +123,15 @@ ol.steps li::before {
 
 
 /* ---- Route map ---- */
-#routemap .china { fill: #EDE4D3; stroke: var(--rule); stroke-width: 1; stroke-linejoin: round; }
+#routemap .china { fill: #EDE4D3; stroke: var(--rule); stroke-width: calc(1px / var(--z)); stroke-linejoin: round; }
 #routemap .china-grain { fill: url(#grain); opacity: 0.06; pointer-events: none; }
 #routemap text { paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
 #routemap .pin .num { stroke: none; }
-#routemap .neighbours { fill: none; stroke: var(--rule); stroke-width: 0.8; stroke-linejoin: round; opacity: 0.7; }
-#routemap .leg { fill: none; stroke-width: 3; stroke-linecap: round; }
+#routemap .neighbours { fill: none; stroke: var(--rule); stroke-width: calc(0.8px / var(--z)); stroke-linejoin: round; opacity: 0.7; }
+#routemap { --z: 1; }
+#routemap .leg { fill: none; stroke-width: calc(3px / var(--z)); stroke-linecap: round; transition: opacity 300ms ease-out; }
 #routemap .leg.rail { stroke: var(--ink); }
-#routemap .leg.fly { stroke: var(--accent); stroke-dasharray: 8 8; }
+#routemap .leg.fly { stroke: var(--accent); stroke-dasharray: calc(8px / var(--z)) calc(8px / var(--z)); }
 #routemap .via circle { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
 #routemap .via text { font-size: 13px; fill: var(--muted); }
 #routemap .legend text { font-size: 15px; fill: var(--muted); }
@@ -144,21 +145,52 @@ ol.steps li::before {
 #routemap .pin:hover .dot { stroke: var(--accent); }
 #routemap .pin:focus, #routemap .pin:focus-visible { outline: none; }
 #routemap .pin:focus-visible .dot { stroke: var(--accent); stroke-width: 4; }
-#routemap .pin.open .dot { fill: var(--accent); stroke: var(--accent); }
-#routemap .pin.open .num { fill: #fff; }
-#routemap .pin.open .name { fill: var(--accent); }
+#routemap .marker { transform-origin: 0 0; }
+#routemap .pin.focus .dot { fill: var(--accent); stroke: var(--accent); }
+#routemap .pin.focus .num { fill: #fff; }
+#routemap .pin.focus .name { fill: var(--accent); }
+#routemap.focused .pin:not(.focus):not(.near) { opacity: 0.3; }
+#routemap.focused .leg:not(.near) { opacity: 0.25; }
+#routemap.focused .legend { opacity: 0; transition: opacity 200ms; }
+#routemap .legend { transition: opacity 200ms; }
+#routemap .pin { transition: opacity 300ms ease-out; }
 
 /* draw-on: legs are masked by paths that draw from 0 to full; pins fade in after their inbound leg */
-#routemap .reveal { fill: none; stroke: #fff; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+#routemap .reveal { fill: none; stroke: #fff; stroke-width: calc(12px / var(--z)); stroke-linecap: round; stroke-dasharray: 1 1; stroke-dashoffset: 1; }
 #routemap .pin { opacity: 0; }
 #routemap.drawn .reveal { stroke-dashoffset: 0; transition: stroke-dashoffset 260ms ease-out; }
 #routemap.drawn .pin { opacity: 1; transition: opacity 200ms ease-out; }
-#routemap .leg.hl { stroke-width: 5; }
+#routemap .leg.hl { stroke-width: calc(5px / var(--z)); }
 #routemap .pin.hl .dot { stroke: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   #routemap .reveal { stroke-dashoffset: 0 !important; transition: none !important; }
   #routemap .pin { opacity: 1 !important; transition: none !important; }
 }
+
+/* ---- Stop card (focus mode) ---- */
+.side { position: relative; min-width: 0; }
+.stopcard { position: relative; overflow: hidden; padding: 1.1em 1.2em 1em; animation: fade 220ms ease-out; }
+.stopcard .zh-bg { position: absolute; right: -0.05em; top: -0.35em; font-size: 6.5em; line-height: 1; font-weight: 700; color: var(--accent); opacity: 0.07; pointer-events: none; user-select: none; }
+.stopcard .eyebrow { font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); font-weight: 600; margin: 0 0 0.3em; }
+.stopcard .stopname { font-size: 1.8em; line-height: 1.05; margin: 0 0 0.5em; letter-spacing: -0.015em; }
+.stopcard .arrive .leg { margin: 0 0 0.8em; padding: 0.5em 0.7em; background: var(--bg); border-radius: 8px; font-size: 0.8em; color: var(--muted); }
+.stopcard .arrive .leg.fly { color: var(--accent); }
+.stopcard .arrive .ic { display: inline-block; width: 1.5em; }
+.stopcard .label { font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 0 0 0.3em; }
+.stopcard .acts { margin: 0 0 0.6em; padding-left: 1.1em; font-size: 0.85em; }
+.stopcard .acts li { margin-bottom: 0.25em; }
+.stopcard .caveat { font-size: 0.78em; font-style: italic; color: var(--muted); margin: 0 0 0.6em; }
+.stopcard .photo { margin: 0 0 0.8em; }
+.stopcard .photo img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; }
+.stopcard .stepper { display: flex; justify-content: space-between; gap: 0.6em; margin-top: 0.8em; padding-top: 0.7em; border-top: 1px solid var(--rule); }
+.stopcard .step, .stopcard .back { font: inherit; font-size: 0.8em; cursor: pointer; border-radius: 999px; }
+.stopcard .step { font-weight: 700; color: var(--ink); background: var(--card); border: 1px solid var(--rule); padding: 0.45em 0.9em; }
+.stopcard .step:hover:not(:disabled) { border-color: var(--ink); }
+.stopcard .step:disabled { opacity: 0.4; cursor: default; }
+.stopcard .back { margin-top: 0.6em; color: var(--muted); background: none; border: none; padding: 0.2em 0; }
+.stopcard .back:hover { color: var(--ink); }
+.stopcard .kbd { font-size: 0.85em; border: 1px solid var(--rule); border-radius: 4px; padding: 0 0.35em; margin-left: 0.2em; }
+.stopcard .step:focus-visible, .stopcard .back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 @media (max-width: 700px) {
   body { font-size: 15px; }
@@ -172,6 +204,7 @@ ol.steps li::before {
   #routemap .reveal { stroke-dashoffset: 0 !important; }
   #routemap .pin { opacity: 1 !important; }
   #routemap .china-grain { display: none; }
+  #routemap.focused .pin, #routemap.focused .leg { opacity: 1 !important; }
 }
 </style>
 </head>
@@ -236,7 +269,10 @@ ol.steps li::before {
       <g class="pins"></g>
       <g class="legend"></g>
     </svg>
-    <div class="itin acc"><p class="hint">Click a stop for how to get there and what to do</p><details class="stop"><summary><span class="num">1</span><span class="city">Beijing</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly in from Oslo, ~16 h direct or one stop</p><ul class="acts"><li>Forbidden City and Tiananmen Square</li><li>Mutianyu Great Wall day with a private car</li><li>Temple of Heaven and the Summer Palace</li><li>Hutong food walk and Peking duck</li></ul></div></details><details class="stop"><summary><span class="num">2</span><span class="city">Xi'an</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · 4.5–6 h from Beijing</p><ul class="acts"><li>Terracotta Army</li><li>Cycle the city wall</li><li>Muslim Quarter street food: roujiamo, biang-biang noodles</li><li>Big Wild Goose Pagoda fountains at night</li></ul></div></details><details class="stop"><summary><span class="num">3</span><span class="city">Chongqing</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~5 h from Xi'an</p><ul class="acts"><li>Hongya Cave lit up at night</li><li>Chongqing hotpot, the fiery original</li><li>Yangtze cable car and Liziba monorail through a building</li><li>Ciqikou old town</li><li>Dazu Rock Carvings day trip</li></ul></div></details><details class="stop"><summary><span class="num">4</span><span class="city">Wulong</span><span class="n">1 night</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~2 h from Chongqing</p><ul class="acts"><li>Three Natural Bridges</li><li>Longshuixia Fissure Gorge</li><li>Furong Cave</li></ul></div></details><details class="stop"><summary><span class="num">5</span><span class="city">Zhangjiajie</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~2 h from Wulong South</p><ul class="acts"><li>National Forest Park, the Avatar pillars</li><li>Bailong elevator and Tianzi Mountain</li><li>Tianmen Mountain and the glass walkway</li><li>Furong ancient town day trip: a village on a waterfall</li></ul></div></details><details class="stop"><summary><span class="num">6</span><span class="city">Lijiang</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly · 4–8 h via Kunming from Zhangjiajie</p><ul class="acts"><li>Dayan old town, early morning before the crowds</li><li>Jade Dragon Snow Mountain and Blue Moon Valley</li><li>Tiger Leaping Gorge hike, two days with a guesthouse night</li><li>Shuhe and Baisha villages by bike</li><li>Black Dragon Pool</li></ul><p class="caveat">Two nights gives one full day: the old town plus either the snow mountain or a taste of the gorge. The two-day hike does not fit.</p></div></details><details class="stop"><summary><span class="num">7</span><span class="city">Hong Kong</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly · ~2.5 h, some via Kunming from Lijiang</p><ul class="acts"><li>Victoria Peak at dusk</li><li>Star Ferry across the harbour</li><li>Dim sum lunch, dai pai dong dinner</li><li>Dragon's Back hike or Lantau Big Buddha</li><li>Mong Kok night markets</li></ul></div></details><details class="stop"><summary><span class="num">8</span><span class="city">Wangxian Valley</span><span class="n">1 night</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~6 h + 1 h car from Hong Kong</p><ul class="acts"><li>Cliffside town lit up at night</li><li>Canyon walkways and waterfalls</li><li>Morning mist before the day visitors arrive</li></ul></div></details><details class="stop"><summary><span class="num">9</span><span class="city">Wuhan</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · 1 h car + ~3 h from Wangxian Valley</p><ul class="acts"><li>Yellow Crane Tower</li><li>Hubei Provincial Museum and the Marquis Yi bells</li><li>East Lake greenway by bike</li><li>Hot dry noodles for breakfast</li></ul></div></details><details class="stop"><summary><span class="num">10</span><span class="city">Shanghai</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~4 h from Wuhan</p><ul class="acts"><li>The Bund and the Pudong skyline</li><li>Yu Garden and the old town</li><li>French Concession cafés and side streets</li><li>Shanghai Tower observation deck</li><li>Museums by day, nightlife by night</li></ul></div></details><p class="total">23 nights</p></div>
+    <div class="side">
+    <div class="itin acc"><p class="hint">Click a stop to zoom in</p><details class="stop"><summary><span class="num">1</span><span class="city">Beijing</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly in from Oslo, ~16 h direct or one stop</p><ul class="acts"><li>Forbidden City and Tiananmen Square</li><li>Mutianyu Great Wall day with a private car</li><li>Temple of Heaven and the Summer Palace</li><li>Hutong food walk and Peking duck</li></ul></div></details><details class="stop"><summary><span class="num">2</span><span class="city">Xi'an</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · 4.5–6 h from Beijing</p><ul class="acts"><li>Terracotta Army</li><li>Cycle the city wall</li><li>Muslim Quarter street food: roujiamo, biang-biang noodles</li><li>Big Wild Goose Pagoda fountains at night</li></ul></div></details><details class="stop"><summary><span class="num">3</span><span class="city">Chongqing</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~5 h from Xi'an</p><ul class="acts"><li>Hongya Cave lit up at night</li><li>Chongqing hotpot, the fiery original</li><li>Yangtze cable car and Liziba monorail through a building</li><li>Ciqikou old town</li><li>Dazu Rock Carvings day trip</li></ul></div></details><details class="stop"><summary><span class="num">4</span><span class="city">Wulong</span><span class="n">1 night</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~2 h from Chongqing</p><ul class="acts"><li>Three Natural Bridges</li><li>Longshuixia Fissure Gorge</li><li>Furong Cave</li></ul></div></details><details class="stop"><summary><span class="num">5</span><span class="city">Zhangjiajie</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~2 h from Wulong South</p><ul class="acts"><li>National Forest Park, the Avatar pillars</li><li>Bailong elevator and Tianzi Mountain</li><li>Tianmen Mountain and the glass walkway</li><li>Furong ancient town day trip: a village on a waterfall</li></ul></div></details><details class="stop"><summary><span class="num">6</span><span class="city">Lijiang</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly · 4–8 h via Kunming from Zhangjiajie</p><ul class="acts"><li>Dayan old town, early morning before the crowds</li><li>Jade Dragon Snow Mountain and Blue Moon Valley</li><li>Tiger Leaping Gorge hike, two days with a guesthouse night</li><li>Shuhe and Baisha villages by bike</li><li>Black Dragon Pool</li></ul><p class="caveat">Two nights gives one full day: the old town plus either the snow mountain or a taste of the gorge. The two-day hike does not fit.</p></div></details><details class="stop"><summary><span class="num">7</span><span class="city">Hong Kong</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg fly"><span class="ic">✈</span>Fly · ~2.5 h, some via Kunming from Lijiang</p><ul class="acts"><li>Victoria Peak at dusk</li><li>Star Ferry across the harbour</li><li>Dim sum lunch, dai pai dong dinner</li><li>Dragon's Back hike or Lantau Big Buddha</li><li>Mong Kok night markets</li></ul></div></details><details class="stop"><summary><span class="num">8</span><span class="city">Wangxian Valley</span><span class="n">1 night</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~6 h + 1 h car from Hong Kong</p><ul class="acts"><li>Cliffside town lit up at night</li><li>Canyon walkways and waterfalls</li><li>Morning mist before the day visitors arrive</li></ul></div></details><details class="stop"><summary><span class="num">9</span><span class="city">Wuhan</span><span class="n">2 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · 1 h car + ~3 h from Wangxian Valley</p><ul class="acts"><li>Yellow Crane Tower</li><li>Hubei Provincial Museum and the Marquis Yi bells</li><li>East Lake greenway by bike</li><li>Hot dry noodles for breakfast</li></ul></div></details><details class="stop"><summary><span class="num">10</span><span class="city">Shanghai</span><span class="n">3 nights</span><span class="chev">›</span></summary><div class="more"><p class="leg rail"><span class="ic">🚄</span>Rail · ~4 h from Wuhan</p><ul class="acts"><li>The Bund and the Pudong skyline</li><li>Yu Garden and the old town</li><li>French Concession cafés and side streets</li><li>Shanghai Tower observation deck</li><li>Museums by day, nightlife by night</li></ul></div></details><p class="total">23 nights</p></div>
+    <article class="card stopcard" hidden aria-live="polite"></article>
+    </div>
   </div>
 </section>
 
@@ -321,9 +357,11 @@ window.ROUTE = {
   // transit dots
   var gPins = svg.querySelector('.pins');
   Object.keys(R.via).forEach(function (k) {
-    var v = R.via[k], g = el('g', { 'class': 'via' });
-    g.appendChild(el('circle', { cx: v.xy[0], cy: v.xy[1], r: 5 }));
-    g.appendChild(el('text', { x: v.xy[0] + 10, y: v.xy[1] + 4 }, v.name + ', transit'));
+    var v = R.via[k], g = el('g', { 'class': 'via', transform: 'translate(' + v.xy[0].toFixed(1) + ' ' + v.xy[1].toFixed(1) + ')' });
+    var m = el('g', { 'class': 'marker' });
+    m.appendChild(el('circle', { cx: 0, cy: 0, r: 5 }));
+    m.appendChild(el('text', { x: 10, y: 4 }, v.name + ', transit'));
+    g.appendChild(m);
     gPins.appendChild(g);
   });
 
@@ -338,16 +376,18 @@ window.ROUTE = {
   };
   R.stops.forEach(function (s, i) {
     var o = OFF[s.anchor] || OFF.right, x = s.xy[0], y = s.xy[1];
-    var g = el('g', { 'class': 'pin', 'data-stop': i, role: 'button', tabindex: 0, 'aria-label': s.name + ', ' + s.nights + ' night' + (s.nights === 1 ? '' : 's') });
+    var g = el('g', { 'class': 'pin', 'data-stop': i, role: 'button', tabindex: 0, 'aria-label': s.name + ', ' + s.nights + ' night' + (s.nights === 1 ? '' : 's'), transform: 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')' });
     g.style.transitionDelay = (i === 0 ? 0 : Math.min(i, segments) * STEP) + 'ms';
-    g.appendChild(el('circle', { cx: x, cy: y, r: 13.5, 'class': 'halo' }));
-    g.appendChild(el('circle', { cx: x, cy: y, r: 11, 'class': 'dot' }));
-    g.appendChild(el('text', { x: x, y: y + 4.5, 'text-anchor': 'middle', 'class': 'num' }, String(i + 1)));
-    var name = el('text', { x: x + o.dx, y: y + o.name, 'text-anchor': o.anchor, 'class': 'name' });
+    var m = el('g', { 'class': 'marker' });
+    m.appendChild(el('circle', { cx: 0, cy: 0, r: 13.5, 'class': 'halo' }));
+    m.appendChild(el('circle', { cx: 0, cy: 0, r: 11, 'class': 'dot' }));
+    m.appendChild(el('text', { x: 0, y: 4.5, 'text-anchor': 'middle', 'class': 'num' }, String(i + 1)));
+    var name = el('text', { x: o.dx, y: o.name, 'text-anchor': o.anchor, 'class': 'name' });
     name.appendChild(el('tspan', {}, s.name));
     if (s.zh) name.appendChild(el('tspan', { 'class': 'zh', dx: 6 }, s.zh));
-    g.appendChild(name);
-    g.appendChild(el('text', { x: x + o.dx, y: y + o.nights, 'text-anchor': o.anchor, 'class': 'nights' }, s.nights + ' night' + (s.nights === 1 ? '' : 's')));
+    m.appendChild(name);
+    m.appendChild(el('text', { x: o.dx, y: o.nights, 'text-anchor': o.anchor, 'class': 'nights' }, s.nights + ' night' + (s.nights === 1 ? '' : 's')));
+    g.appendChild(m);
     gPins.appendChild(g);
   });
 
@@ -361,22 +401,120 @@ window.ROUTE = {
 
   // draw-on when the slide becomes active; reset when it leaves so it replays
   var slide = svg.closest('.slide');
+  function draw() {
+    // flush styles first so the transition runs from the undrawn state, even on a direct load
+    void svg.getBoundingClientRect();
+    setTimeout(function () { svg.classList.add('drawn'); }, 30);
+  }
   document.addEventListener('slidechange', function (e) {
-    if (e.detail.el === slide) requestAnimationFrame(function () { svg.classList.add('drawn'); });
-    else svg.classList.remove('drawn');
+    if (e.detail.el === slide) draw(); else svg.classList.remove('drawn');
   });
-  if (slide.classList.contains('active')) requestAnimationFrame(function () { svg.classList.add('drawn'); });
+  document.addEventListener('DOMContentLoaded', function () { if (slide.classList.contains('active') && !svg.classList.contains('drawn')) draw(); });
 
   // hovering an accordion row highlights its pin and inbound leg
+  var details = document.querySelectorAll('.map details.stop');
   var rows = document.querySelectorAll('.map details.stop > summary');
+  function pinOf(i) { return svg.querySelector('.pin[data-stop="' + i + '"]'); }
+  function legsTo(i) { return svg.querySelectorAll('.leg[data-to="' + R.stops[i].id + '"]'); }
   rows.forEach(function (row, i) {
-    var pin = svg.querySelector('.pin[data-stop="' + i + '"]'), legs = svg.querySelectorAll('.leg[data-to="' + R.stops[i].id + '"]');
-    function set(on) { pin.classList.toggle('hl', on); legs.forEach(function (p) { p.classList.toggle('hl', on); }); }
+    function set(on) { pinOf(i).classList.toggle('hl', on); legsTo(i).forEach(function (p) { p.classList.toggle('hl', on); }); }
     row.addEventListener('mouseenter', function () { set(true); });
     row.addEventListener('mouseleave', function () { set(false); });
     row.addEventListener('focus', function () { set(true); });
     row.addEventListener('blur', function () { set(false); });
   });
+
+  // ---- Focus mode: zoom to a stop, swap the list for a card -----------------
+  var FULL = vb.slice(), view = vb.slice(), ZOOM = 1.9, tween = null;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var side = document.querySelector('.map .side'), list = side.querySelector('.itin'), card = side.querySelector('.stopcard');
+  var markers = svg.querySelectorAll('.marker');
+  function apply(v) {
+    view = v;
+    svg.setAttribute('viewBox', v.map(function (n) { return n.toFixed(2); }).join(' '));
+    var z = FULL[2] / v[2];
+    svg.style.setProperty('--z', z);
+    markers.forEach(function (m) { m.style.transform = 'scale(' + (1 / z) + ')'; });
+  }
+  function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function flyTo(target) {
+    if (tween) cancelAnimationFrame(tween);
+    if (reduce) { apply(target); return; }
+    var from = view.slice(), t0 = performance.now(), D = 650;
+    (function step(now) {
+      var t = Math.min(1, (now - t0) / D), k = ease(t);
+      apply(from.map(function (a, j) { return a + (target[j] - a) * k; }));
+      if (t < 1) tween = requestAnimationFrame(step); else tween = null;
+    })(t0);
+  }
+  function frameFor(i) {
+    var w = FULL[2] / ZOOM, h = FULL[3] / ZOOM, c = R.stops[i].xy;
+    var x = Math.min(Math.max(c[0] - w / 2, FULL[0]), FULL[0] + FULL[2] - w);
+    var y = Math.min(Math.max(c[1] - h / 2, FULL[1]), FULL[1] + FULL[3] - h);
+    return [x, y, w, h];
+  }
+  var focused = -1;
+  function renderCard(i) {
+    var st = R.stops[i], d = details[i], n = R.stops.length;
+    var arrive = d.querySelector('.more .leg'), acts = d.querySelector('.acts'), cav = d.querySelector('.caveat');
+    var prev = i > 0 ? R.stops[i - 1] : null, next = i < n - 1 ? R.stops[i + 1] : null;
+    card.innerHTML =
+      '<div class="zh-bg" aria-hidden="true">' + (st.zh || '') + '</div>' +
+      '<p class="eyebrow">Stop ' + (i + 1) + ' of ' + n + ' · ' + st.nights + ' night' + (st.nights === 1 ? '' : 's') + '</p>' +
+      '<h3 class="stopname">' + st.name + '</h3>' +
+      (arrive ? '<div class="arrive">' + arrive.outerHTML + '</div>' : '') +
+      (st.image ? '<figure class="photo"><img src="' + st.image + '" alt="' + (st.imageAlt || st.name) + '" loading="lazy"></figure>' : '') +
+      '<p class="label">What to do</p>' + (acts ? acts.outerHTML : '') + (cav ? cav.outerHTML : '') +
+      '<nav class="stepper">' +
+        '<button type="button" class="step prev"' + (prev ? '' : ' disabled') + '>← ' + (prev ? prev.name : 'Start') + '</button>' +
+        '<button type="button" class="step next"' + (next ? '' : ' disabled') + '>' + (next ? next.name : 'End') + ' →</button>' +
+      '</nav>' +
+      '<button type="button" class="back">Back to the route <span class="kbd">Esc</span></button>';
+    card.querySelector('.prev').addEventListener('click', function () { if (prev) focus(i - 1); });
+    card.querySelector('.next').addEventListener('click', function () { if (next) focus(i + 1); });
+    card.querySelector('.back').addEventListener('click', unfocus);
+  }
+  function focus(i) {
+    focused = i;
+    svg.classList.add('focused');
+    R.stops.forEach(function (st, k) {
+      var pin = pinOf(k);
+      pin.classList.toggle('focus', k === i);
+      pin.classList.toggle('near', k === i - 1 || k === i + 1);
+    });
+    svg.querySelectorAll('.leg').forEach(function (l) {
+      var to = l.getAttribute('data-to'), idx = R.stops.findIndex(function (st) { return st.id === to; });
+      l.classList.toggle('near', idx === i || idx === i + 1);
+    });
+    flyTo(frameFor(i));
+    renderCard(i);
+    list.hidden = true; card.hidden = false;
+  }
+  function unfocus() {
+    if (focused < 0) return;
+    focused = -1;
+    svg.classList.remove('focused');
+    svg.querySelectorAll('.focus, .near').forEach(function (e) { e.classList.remove('focus', 'near'); });
+    flyTo(FULL.slice());
+    card.hidden = true; list.hidden = false;
+  }
+  // triggers
+  svg.querySelectorAll('.pin').forEach(function (pin) {
+    var i = +pin.dataset.stop;
+    function go() { if (focused === i) unfocus(); else focus(i); }
+    pin.addEventListener('click', function (e) { e.stopPropagation(); go(); });
+    pin.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); go(); } });
+  });
+  rows.forEach(function (row, i) {
+    row.addEventListener('click', function (e) { e.preventDefault(); focus(i); });
+  });
+  svg.addEventListener('click', function (e) { if (!e.target.closest('.pin')) unfocus(); });
+  document.addEventListener('slidechange', function (e) { if (e.detail.el !== slide && focused >= 0) { focused = -1; svg.classList.remove('focused'); apply(FULL.slice()); card.hidden = true; list.hidden = false; } });
+  window.routeFocus = {
+    active: function () { return focused >= 0 && slide.classList.contains('active'); },
+    step: function (d) { var n = focused + d; if (n >= 0 && n < R.stops.length) focus(n); },
+    exit: unfocus
+  };
 })();
 </script>
 
@@ -512,25 +650,14 @@ window.ROUTE = {
   }
   document.getElementById('next').addEventListener('click', function (e) { e.stopPropagation(); show(i + 1); });
   document.getElementById('prev').addEventListener('click', function (e) { e.stopPropagation(); show(i - 1); });
-  document.getElementById('deck').addEventListener('click', function (e) { if (e.target.closest('.itin') || e.target.closest('.pin')) return; show(i + 1); });
-  document.querySelectorAll('.map .pin').forEach(function (pin) {
-    function toggle() {
-      var d = pin.closest('.map').querySelectorAll('details.stop')[+pin.dataset.stop];
-      if (!d) return;
-      d.open = !d.open;
-      if (d.open) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-    pin.addEventListener('click', function (e) { e.stopPropagation(); toggle(); });
-    pin.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); toggle(); } });
-  });
-  document.querySelectorAll('.map details.stop').forEach(function (d, k) {
-    d.addEventListener('toggle', function () {
-      var pin = d.closest('.map').querySelector('.pin[data-stop="' + k + '"]');
-      if (pin) pin.classList.toggle('open', d.open);
-    });
-  });
+  document.getElementById('deck').addEventListener('click', function (e) { if (e.target.closest('.map')) return; show(i + 1); });
   document.addEventListener('keydown', function (e) {
-    if (e.target.closest && (e.target.closest('.itin') || e.target.closest('.pin'))) return;
+    if (window.routeFocus && window.routeFocus.active()) {
+      if (e.key === 'Escape') { e.preventDefault(); window.routeFocus.exit(); return; }
+      if (e.key === 'ArrowRight') { e.preventDefault(); window.routeFocus.step(1); return; }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); window.routeFocus.step(-1); return; }
+    }
+    if (e.target.closest && e.target.closest('.map')) return;
     if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
     if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
     if (e.key === 'Home') show(0);
