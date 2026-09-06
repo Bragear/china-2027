@@ -482,13 +482,13 @@ window.ROUTE = {
   ],
   // transit points: drawn as small hollow dots, not stops
   via: { kunming: { name: "Kunming", zh: "昆明", lat: 25.04, lng: 102.71 } },
-  // legs run in stop order; mode rail | fly; via = transit id; bow = arc curvature (sign flips side)
+  // legs run in stop order; mode rail | fly; via = transit id; bow = arc curvature (sign flips side; a list gives one value per segment of a via leg)
   legs: [
     { from: "beijing",     to: "xian",        mode: "rail" },
     { from: "xian",        to: "chongqing",   mode: "rail" },
     { from: "chongqing",   to: "wulong",      mode: "rail" },
     { from: "wulong",      to: "zhangjiajie", mode: "rail" },
-    { from: "zhangjiajie", to: "lijiang",     mode: "fly", via: "kunming", bow: -0.12 },
+    { from: "zhangjiajie", to: "lijiang",     mode: "fly", via: "kunming", bow: [-0.12, 0.28] },
     { from: "lijiang",     to: "hongkong",    mode: "fly", bow: 0.22 },
     { from: "hongkong",    to: "wangxian",    mode: "rail" },
     { from: "wangxian",    to: "wuhan",       mode: "rail" },
@@ -532,7 +532,8 @@ window.ROUTE = {
     var a = byId[l.from].xy, b = byId[l.to].xy, bow = l.bow == null ? 0.18 : l.bow;
     var pts = l.via ? [a, R.via[l.via].xy, b] : [a, b];
     for (var k = 0; k < pts.length - 1; k++) {
-      var d = l.mode === 'fly' ? arc(pts[k], pts[k + 1], bow) : 'M' + pts[k][0].toFixed(1) + ' ' + pts[k][1].toFixed(1) + ' L' + pts[k + 1][0].toFixed(1) + ' ' + pts[k + 1][1].toFixed(1);
+      var bk = Array.isArray(bow) ? bow[k] : bow;
+      var d = l.mode === 'fly' ? arc(pts[k], pts[k + 1], bk) : 'M' + pts[k][0].toFixed(1) + ' ' + pts[k][1].toFixed(1) + ' L' + pts[k + 1][0].toFixed(1) + ' ' + pts[k + 1][1].toFixed(1);
       // each segment is revealed by a mask whose path draws on in sequence
       var id = 'reveal-' + i + '-' + k, mask = el('mask', { id: id });
       var rp = el('path', { d: d, 'class': 'reveal', pathLength: 1 });
